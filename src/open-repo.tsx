@@ -1,5 +1,6 @@
-import { List, getPreferenceValues, LocalStorage } from "@raycast/api";
-import { useCachedPromise } from "@raycast/utils";
+import { Cache, List, getPreferenceValues, LocalStorage } from "@raycast/api";
+import { useCachedPromise, useCachedState } from "@raycast/utils";
+import { useEffect, useMemo } from "react";
 import { readdirSync, statSync } from "fs";
 import { homedir } from "os";
 import { join, resolve } from "path";
@@ -22,6 +23,14 @@ interface RepoData {
   repos: Repo[];
   duplicateNames: string[];
 }
+
+interface RepoDataSnapshot {
+  foldersInput: string;
+  data: RepoData;
+}
+
+const cache = new Cache({ namespace: "repo-launcher" });
+const REPO_DATA_SNAPSHOT_KEY = "repo-data-snapshot-v1";
 
 function normalizePath(inputPath: string): string {
   const trimmedPath = inputPath.trim();
@@ -126,20 +135,67 @@ async function getPinned() {
   return stored ? JSON.parse(stored) : [];
 }
 
+function getRepoDataSnapshot(foldersInput: string): RepoData | undefined {
+  const serialized = cache.get(REPO_DATA_SNAPSHOT_KEY);
+
+  if (!serialized) {
+    return undefined;
+  }
+
+  try {
+    const snapshot = JSON.parse(serialized) as RepoDataSnapshot;
+    if (snapshot.foldersInput !== foldersInput) {
+      return undefined;
+    }
+
+    return snapshot.data;
+  } catch {
+    return undefined;
+  }
+}
+
+function setRepoDataSnapshot(foldersInput: string, data: RepoData): void {
+  const snapshot: RepoDataSnapshot = { foldersInput, data };
+  cache.set(REPO_DATA_SNAPSHOT_KEY, JSON.stringify(snapshot));
+}
+
 export default function Command() {
   const preferences = getPreferenceValues<Preferences>();
 
-  const { data: pinnedPaths = [], mutate: mutatePinned } = useCachedPromise(getPinned, []);
-  const { data, isLoading } = useCachedPromise(fetchRepoData, [preferences.reposFolders]);
+  const initialRepoData = useMemo(() => getRepoDataSnapshot(preferences.reposFolders), [preferences.reposFolders]);
+  const [pinnedPaths, setPinnedPaths] = useCachedState<string[]>("pinned-repos", []);
+
+  useEffect(() => {
+    if (pinnedPaths.length > 0) {
+      return;
+    }
+
+    async function migratePinnedPaths() {
+      const legacyPinnedPaths = await getPinned();
+      if (legacyPinnedPaths.length > 0) {
+        setPinnedPaths(legacyPinnedPaths);
+      }
+    }
+
+    migratePinnedPaths();
+  }, [pinnedPaths.length, setPinnedPaths]);
+
+  const { data, isLoading } = useCachedPromise(fetchRepoData, [preferences.reposFolders], {
+    initialData: initialRepoData,
+    onData(nextData) {
+      setRepoDataSnapshot(preferences.reposFolders, nextData);
+    },
+  });
   const repos = data?.repos ?? [];
   const duplicateNames = data?.duplicateNames ?? [];
+  const showListLoading = isLoading && repos.length === 0;
 
   const togglePin = async (path: string) => {
     const newPinned = pinnedPaths.includes(path)
       ? pinnedPaths.filter((p: string) => p !== path)
       : [...pinnedPaths, path];
+    setPinnedPaths(newPinned);
     await LocalStorage.setItem("pinned-repos", JSON.stringify(newPinned));
-    mutatePinned();
   };
 
   const pinned = repos.filter((r) => pinnedPaths.includes(r.path));
@@ -157,7 +213,7 @@ export default function Command() {
   );
 
   return (
-    <List isLoading={isLoading} searchBarPlaceholder="Search your repos...">
+    <List isLoading={showListLoading} searchBarPlaceholder="Search your repos...">
       {pinned.length > 0 && <List.Section title="Pinned">{pinned.map(renderItem)}</List.Section>}
       <List.Section title={pinned.length > 0 ? "Repos" : undefined}>{unpinned.map(renderItem)}</List.Section>
     </List>

@@ -13,8 +13,8 @@
   "commands": [
     {
       "name": "open-repo",
-      "title": "Open repo",
-      "description": "Open a repo folder in the configured editor",
+      "title": "Open Repo",
+      "description": "Open a git repository folder in the configured editor or terminal",
       "mode": "view"
     }
   ],
@@ -39,7 +39,7 @@
       "type": "appPicker",
       "required": true,
       "title": "Terminal",
-      "description": "The terminal app to open repos in.",
+      "description": "The terminal app to open repo in.",
       "default": "Ghostty"
     }
   ],
