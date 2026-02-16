@@ -1,0 +1,1 @@
+- This repo uses `bun` as it's package manager.
