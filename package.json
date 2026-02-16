@@ -1,0 +1,69 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "repo-launcher",
+  "title": "Repo Folder Launcher",
+  "description": "Quickly open local repos",
+  "icon": "extension-icon.png",
+  "author": "okbytes",
+  "platforms": [
+    "macOS",
+    "Windows"
+  ],
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "open-repo",
+      "title": "Open repo",
+      "description": "Open a repo folder in the configured editor",
+      "mode": "view"
+    }
+  ],
+  "preferences": [
+    {
+      "name": "reposFolder",
+      "type": "directory",
+      "required": true,
+      "title": "Repository Folder",
+      "description": "The folder containing your code repositories."
+    },
+    {
+      "name": "editorApp",
+      "type": "appPicker",
+      "required": true,
+      "title": "Editor",
+      "description": "The app to open the repo with.",
+      "default": "Zed"
+    },
+    {
+      "name": "terminalApp",
+      "type": "appPicker",
+      "required": true,
+      "title": "Terminal",
+      "description": "The terminal app to open repos in.",
+      "default": "Ghostty"
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.104.1",
+    "@raycast/utils": "^1.17.0",
+    "color-hash": "^2.0.2",
+    "tildify": "^3.0.0"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^2.0.4",
+    "@types/color-hash": "^2.0.0",
+    "@types/node": "22.13.10",
+    "@types/react": "19.0.10",
+    "eslint": "^9.22.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2"
+  },
+  "scripts": {
+    "build": "ray build",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "prepublishOnly": "echo \"\\n\\nIt seems like you are trying to publish the Raycast extension to npm.\\n\\nIf you did intend to publish it to npm, remove the \\`prepublishOnly\\` script and rerun \\`npm publish\\` again.\\nIf you wanted to publish it to the Raycast Store instead, use \\`npm run publish\\` instead.\\n\\n\" && exit 1",
+    "publish": "npx @raycast/api@latest publish"
+  }
+}
