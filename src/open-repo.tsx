@@ -21,7 +21,6 @@ interface Preferences {
 
 interface RepoData {
   repos: Repo[];
-  duplicateNames: string[];
 }
 
 interface RepoDataSnapshot {
@@ -117,17 +116,7 @@ async function fetchRepos(sourceFolders: string[]): Promise<Repo[]> {
 async function fetchRepoData(foldersInput: string): Promise<RepoData> {
   const sourceFolders = parseSourceFolders(foldersInput);
   const repos = await fetchRepos(sourceFolders);
-  const nameCounts = new Map<string, number>();
-
-  for (const repo of repos) {
-    nameCounts.set(repo.name, (nameCounts.get(repo.name) ?? 0) + 1);
-  }
-
-  const duplicateNames = Array.from(nameCounts.entries())
-    .filter(([, count]) => count > 1)
-    .map(([name]) => name);
-
-  return { repos, duplicateNames };
+  return { repos };
 }
 
 async function getPinned() {
@@ -187,7 +176,6 @@ export default function Command() {
     },
   });
   const repos = data?.repos ?? [];
-  const duplicateNames = data?.duplicateNames ?? [];
   const showListLoading = isLoading && repos.length === 0;
 
   const togglePin = async (path: string) => {
@@ -207,7 +195,6 @@ export default function Command() {
       repo={repo}
       isPinned={pinnedPaths.includes(repo.path)}
       preferences={preferences}
-      showSourcePath={duplicateNames.includes(repo.name)}
       onTogglePin={togglePin}
     />
   );

@@ -19,7 +19,6 @@ interface RepoItemProps {
   repo: Repo;
   isPinned: boolean;
   preferences: Preferences;
-  showSourcePath?: boolean;
   onTogglePin: (path: string) => void;
 }
 
@@ -49,16 +48,16 @@ function useGitStatus(path: string) {
   return { isDirty, branch };
 }
 
-export function RepoItem({ repo, isPinned, preferences, showSourcePath = false, onTogglePin }: RepoItemProps) {
+export function RepoItem({ repo, isPinned, preferences, onTogglePin }: RepoItemProps) {
   const { isDirty, branch } = useGitStatus(repo.path);
   const icon = isDirty ? { source: Icon.Dot, tintColor: Color.Red } : Icon.Folder;
-  const accessories: List.Item.Accessory[] = showSourcePath ? [{ text: abbreviateHomePath(repo.sourcePath) }] : [];
+  const accessories: List.Item.Accessory[] = branch ? [{ text: branch }] : [];
 
   return (
     <List.Item
       key={repo.path}
       title={repo.name}
-      subtitle={branch || undefined}
+      subtitle={abbreviateHomePath(repo.sourcePath)}
       icon={icon}
       accessories={accessories}
       actions={
