@@ -20,11 +20,11 @@
   ],
   "preferences": [
     {
-      "name": "reposFolder",
-      "type": "directory",
+      "name": "reposFolders",
+      "type": "textfield",
       "required": true,
-      "title": "Repository Folder",
-      "description": "The folder containing your code repositories."
+      "title": "Repository Folders",
+      "description": "Comma or newline-separated repo source folders. Use ~ for home paths (for example: ~/code, ~/work/repos)."
     },
     {
       "name": "editorApp",

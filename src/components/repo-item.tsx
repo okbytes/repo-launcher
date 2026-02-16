@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { ActionPanel, Action, Color, List, Icon, openExtensionPreferences } from "@raycast/api";
+import { homedir } from "os";
 import { getGitBranch, getGitDirty } from "../lib/git";
 
 interface Repo {
   name: string;
   path: string;
+  sourcePath: string;
   workspaceFile?: string;
 }
 
@@ -17,7 +19,18 @@ interface RepoItemProps {
   repo: Repo;
   isPinned: boolean;
   preferences: Preferences;
+  showSourcePath?: boolean;
   onTogglePin: (path: string) => void;
+}
+
+function abbreviateHomePath(inputPath: string): string {
+  const userHomePath = homedir();
+
+  if (inputPath.startsWith(userHomePath)) {
+    return `~${inputPath.slice(userHomePath.length)}`;
+  }
+
+  return inputPath;
 }
 
 function useGitStatus(path: string) {
@@ -36,10 +49,10 @@ function useGitStatus(path: string) {
   return { isDirty, branch };
 }
 
-export function RepoItem({ repo, isPinned, preferences, onTogglePin }: RepoItemProps) {
+export function RepoItem({ repo, isPinned, preferences, showSourcePath = false, onTogglePin }: RepoItemProps) {
   const { isDirty, branch } = useGitStatus(repo.path);
   const icon = isDirty ? { source: Icon.Dot, tintColor: Color.Red } : Icon.Folder;
-  const accessories: List.Item.Accessory[] = [];
+  const accessories: List.Item.Accessory[] = showSourcePath ? [{ text: abbreviateHomePath(repo.sourcePath) }] : [];
 
   return (
     <List.Item
