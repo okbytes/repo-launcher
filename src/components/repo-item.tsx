@@ -63,18 +63,16 @@ export function RepoItem({ repo, isPinned, preferences, onTogglePin }: RepoItemP
       actions={
         <ActionPanel>
           <Action.Open
-            title={`Open in ${preferences.editorApp.name}`}
-            icon={Icon.Code}
-            target={
-              repo.workspaceFile && preferences.editorApp.name === "Visual Studio Code" ? repo.workspaceFile : repo.path
-            }
-            application={preferences.editorApp.path}
-          />
-          <Action.Open
             icon={Icon.Terminal}
             title={`Open in ${preferences.terminalApp.name}`}
             target={repo.path}
             application={preferences.terminalApp.path}
+          />
+          <Action.Open
+            title={`Open in ${preferences.editorApp.name}`}
+            icon={Icon.Code}
+            target={repo.path}
+            application={preferences.editorApp.path}
           />
           <Action
             title={isPinned ? "Unpin" : "Pin"}
